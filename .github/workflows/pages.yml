@@ -1,0 +1,39 @@
+name: Deploy cinema to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cinema/**'
+      - 'LICENSE'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/configure-pages@v5
+      - name: Prepare the cinema release
+        run: |
+          cp LICENSE cinema/LICENSE.txt
+          sed -i "s/?v=preview/?v=${GITHUB_SHA}/g" cinema/index.html
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./cinema
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en" class="film-loading">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090d12">
+  <meta name="description" content="SV-07 clears an orbital gate and flies out of planetary shadow into first light.">
+  <title>PENUMBRA — H. INNOVATION CINEMA</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root{color-scheme:dark;background:#050910}
+    body{margin:0}
+    html.film-loading .cinema{position:relative;display:flex;flex-direction:column;height:100vh;height:100svh}
+    html.film-loading .stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#050910}
+    html.film-loading :is(.masthead,.deck,.title-card,.ship-id,.frame-ticks,.edge-shade){visibility:hidden;pointer-events:none}
+    html.film-loading .thumb{background-image:none}
+    #opening{position:absolute;inset:0;z-index:8;overflow:hidden;color:#eeeae0;background-color:#101925;transition:background-color .18s ease-out}
+    #opening[hidden],#opening [hidden]{display:none!important}
+    .opening-plate,.opening-space,.opening-orbit{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .31s ease}
+    #opening[data-phase="space"] .opening-space{opacity:1}
+    #opening[data-phase="dim"] .opening-space{transition:opacity .14s ease-in}
+    #opening:is([data-phase="orbit"],[data-phase="reveal"]):not(.still-reveal){background-color:transparent}
+    #opening:is([data-phase="orbit"],[data-phase="reveal"]) .opening-orbit{opacity:1;transition:opacity .18s ease-out}
+    #opening.still-reveal .opening-plate{transform:translateY(4.3%)}
+    #opening.still-reveal[data-phase="reveal"] .opening-plate{opacity:1;transform:none;transition:opacity 1.75s ease-in-out,transform 1.75s ease-in-out}
+    .opening-readout{position:fixed;z-index:1;left:clamp(20px,4.45vw,80px);bottom:clamp(78px,26svh,270px);display:flex;align-items:center;gap:15px;font:500 10px/1.5 ui-monospace,monospace;letter-spacing:.15em;text-shadow:0 1px 5px #02070e}
+    .opening-dial{--filled:0%;display:grid;place-items:center;position:relative;width:62px;height:62px;border-radius:50%;color:#f5f0e4;background:#090f17b0;font-size:12px;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+    .opening-dial::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#ff9c73 0 var(--filled),#52637288 var(--filled) 100%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px));mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px))}
+    #loading-label{margin:0}
+    #loading-retry{margin-top:6px;border:1px solid #e29a78;color:#ffc4a7;background:#12171d;padding:.45em .74em;font:inherit;letter-spacing:inherit;cursor:pointer}
+    @keyframes title-arrival{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+    html:not(.film-loading) .cinema[data-state="intro"] .title-card{animation:title-arrival .45s ease-out}
+    @media(prefers-reduced-motion:reduce){#opening,.opening-plate,.opening-space,.opening-orbit{transition:none!important}.title-card{animation:none!important}}
+  </style>
+  <link id="screen-style" rel="stylesheet" href="./css/screen.css?v=preview" media="print" onload="this.media='all'" onerror="this.dataset.failed='1'">
+  <noscript><style>#opening{display:none!important}.stage noscript{display:block;color:white}</style></noscript>
+</head>
+<body>
+<main class="cinema" id="cinema" data-state="intro" aria-busy="true">
+  <section class="stage" id="stage" tabindex="-1" aria-label="Orbital flight">
+    <div id="opening" data-phase="signal" aria-label="Loading film">
+      <picture>
+        <source media="(max-aspect-ratio: 4/5)" srcset="./assets/stills/loading-space-portrait.webp">
+        <img id="opening-space" class="opening-space" src="./assets/stills/loading-space.webp" alt="" fetchpriority="high" decoding="async">
+      </picture>
+      <img id="opening-ship" class="opening-plate" alt="" decoding="async">
+      <div class="opening-readout">
+        <div class="opening-dial" id="loading-progress" role="progressbar" aria-label="Film loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span id="loading-percent" aria-hidden="true">0%</span>
+        </div>
+        <div><p id="loading-label" role="status">ACQUIRING SIGNAL</p><button id="loading-retry" type="button" onclick="location.reload()" hidden>RETRY</button></div>
+      </div>
+    </div>
+    <canvas id="view" aria-hidden="true"></canvas>
+    <canvas id="hdr-view" aria-hidden="true" hidden></canvas>
+    <canvas id="film-credit" role="img" aria-label="PENUMBRA" width="1" height="1" hidden></canvas>
+    <div class="edge-shade" aria-hidden="true"></div>
+
+    <header class="masthead">
+      <span class="wordmark">H. INNOVATION CINEMA</span>
+      <div class="top-controls">
+        <span class="dynamic-range" id="display-mode" title="Display mode">SDR</span>
+        <button type="button" class="sound" id="sound" aria-label="Mute sound (M)" aria-pressed="false" title="Toggle sound (M)">
+          <span class="levels" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span id="sound-text">SOUND ON</span>
+        </button>
+        <button type="button" class="fullscreen" id="fullscreen" aria-label="Enter fullscreen (F)" title="Enter fullscreen (F)"><span class="expand-icon" aria-hidden="true"></span></button>
+      </div>
+    </header>
+
+    <div class="frame-ticks" aria-hidden="true"><i></i><i></i></div>
+    <div class="title-card" id="title-card">
+      <p class="overline"><span class="streak"></span> AN ORBITAL SHORT FILM</p>
+      <h1 lang="en">PENUMBRA</h1>
+      <div class="launch-row">
+        <button class="launch" type="button" id="launch" disabled><span class="play-shape" aria-hidden="true"></span><span id="launch-label">PLAY FILM</span></button>
+      </div>
+      <nav class="film-links" aria-label="Project links">
+        <a href="https://github.com/hasegaw/Penumbra" target="_blank" rel="noopener noreferrer" aria-label="PENUMBRA on GitHub"><img class="github-mark" src="./assets/icons/github.svg" width="15" height="15" alt=""><span>GitHub</span></a>
+        <a href="./LICENSE.txt" target="_blank" rel="noopener noreferrer">LICENSE</a>
+      </nav>
+    </div>
+
+    <div class="ship-id" aria-label="SV-07 orbital survey vessel">
+      <span class="locator" aria-hidden="true"><i></i></span>
+      <span><b>SV–07</b><small>ORBITAL SURVEY VESSEL</small></span>
+    </div>
+
+    <p class="notice" id="notice" role="status" hidden></p>
+    <noscript>Enable JavaScript to play the film.</noscript>
+  </section>
+
+  <section class="deck" aria-label="Playback controls">
+    <div class="transport-row">
+      <button class="transport" type="button" id="transport" aria-label="Play (Space)" title="Play or pause (Space)"><span id="transport-icon" class="play-shape" aria-hidden="true"></span></button>
+      <span class="timecode" id="elapsed">00:00</span>
+      <input class="seek" type="range" id="seek" min="0" max="90" step="0.05" value="0" aria-label="Playback position" aria-valuetext="0 seconds">
+      <span class="deck-label">FLIGHT SEQUENCE</span>
+      <span class="chapter-caption" aria-hidden="true">
+        <span id="caption-number" class="caption-number"></span><span class="caption-line"></span><span id="caption-name"></span>
+      </span>
+    </div>
+
+    <nav class="chapters" aria-label="Chapters">
+      <button type="button" class="chapter current" data-chapter="0" aria-label="Play chapter one, Nightside" aria-current="true">
+        <span class="thumb thumb-1" aria-hidden="true"></span><span class="chapter-copy"><small>01 <i>/</i> 00:00</small><strong lang="en">Nightside</strong></span>
+      </button>
+      <button type="button" class="chapter" data-chapter="1" aria-label="Play chapter two, Ignition">
+        <span class="thumb thumb-2" aria-hidden="true"></span><span class="chapter-copy"><small>02 <i>/</i> 00:22</small><strong lang="en">Ignition</strong></span>
+      </button>
+      <button type="button" class="chapter" data-chapter="2" aria-label="Play chapter three, First Light">
+        <span class="thumb thumb-3" aria-hidden="true"></span><span class="chapter-copy"><small>03 <i>/</i> 00:45</small><strong lang="en">First Light</strong></span>
+      </button>
+      <button type="button" class="chapter" data-chapter="3" aria-label="Play chapter four, Sunward">
+        <span class="thumb thumb-4" aria-hidden="true"></span><span class="chapter-copy"><small>04 <i>/</i> 01:07</small><strong lang="en">Sunward</strong></span>
+      </button>
+    </nav>
+  </section>
+  <div id="play-shutter" aria-hidden="true" hidden></div>
+</main>
+<script defer src="./js/boot.js?v=preview" onerror="document.getElementById('loading-label').textContent='UNABLE TO LOAD FILM';document.getElementById('loading-retry').hidden=false"></script>
+</body>
+</html>
